@@ -6,7 +6,7 @@ starting_url = 'https://api-v2.soundcloud.com/users/669291/tracks?representation
 @extra_params = 'client_id=JlZIsxg2hY5WnBgtn3jfS0UYCl0K8DOg&app_version=1503651513'
 @collection = []
 @downloads = []
-@download_location = './'
+@download_location = '../../'
 
 def retrieve_collection(url)
   response = HTTParty.get(url + '&' + @extra_params)
@@ -16,9 +16,9 @@ def retrieve_collection(url)
     @collection.push(*response_hash['collection'])
   end
 
-  # if response_hash.key?('next_href') && !response_hash['next_href'].nil?
-  #   retrieve_collection(response_hash['next_href'])
-  # end
+  if response_hash.key?('next_href') && !response_hash['next_href'].nil?
+    retrieve_collection(response_hash['next_href'])
+  end
 end
 
 def pluck_download_urls
@@ -42,10 +42,10 @@ def download_files
 
     next if downloaded_files.include?(filename)
 
-    File.open(filename, 'w+') do |file|
+    File.open(@download_location + filename, 'w+') do |file|
       file.binmode
+      print "Downloading #{filename}..."
       response = HTTParty.get(download['download_url'] + '?' + @extra_params, stream_body: true, allow_redirects: true) do |fragment|
-        print "Downloading #{filename}..."
         file.write(fragment)
       end
     end
